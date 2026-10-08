@@ -1,0 +1,26 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Universal Song Collector</title>
+<style>
+body{margin:0;background:#060b1d;color:#fff;font-family:Arial,sans-serif}.wrap{max-width:850px;margin:50px auto;padding:20px}.card{background:#111b3a;border:1px solid #30416d;border-radius:22px;padding:30px}h1{margin-top:0}.sub,.hint{color:#aebbe0}.grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}label{display:block;margin:10px 0 8px;color:#c4d0ef}input{width:100%;padding:15px;box-sizing:border-box;border-radius:12px;border:1px solid #344a82;background:#09122c;color:#fff}.full{grid-column:1/-1}.or{text-align:center;margin:25px;color:#7280a9}button{width:100%;padding:16px;border:0;border-radius:13px;background:#7184ff;color:white;font-weight:bold;font-size:16px;margin-top:20px}.box{padding:15px;background:#09122c;border:1px solid #30416d;border-radius:12px}#status{display:none;margin-top:20px;padding:15px;background:#09122c;border-radius:12px}.error{color:#ff8295}.success{color:#8ff0b0}@media(max-width:650px){.grid{grid-template-columns:1fr}.full{grid-column:auto}}
+</style></head><body><div class="wrap"><div class="card">
+<h1>🎵 Universal Song Collector</h1><p class="sub">Public media URL → MP3, or convert a file already on your laptop.</p>
+<form id="f"><div class="grid">
+<div><label>Form No.</label><input name="form_no" placeholder="e.g. 324" required></div>
+<div><label>Student Name</label><input name="student_name" placeholder="e.g. Dhruv Singhal" required></div>
+<div class="full"><label>Song / Media Link</label><input name="url" placeholder="Paste a public media URL"></div>
+</div><div class="or">OR</div>
+<label>Song already on your laptop?</label><div class="box"><input type="file" name="local_file" accept="audio/*,video/*"></div>
+<button id="b">DOWNLOAD & SAVE AS MP3</button></form>
+<div id="status"><span id="m"></span></div>
+<p class="hint">Filename: Form No + Student Name. Example: 324_Dhruv_Singhal.mp3</p>
+</div></div>
+<script>
+const f=document.getElementById('f'),b=document.getElementById('b'),s=document.getElementById('status'),m=document.getElementById('m');
+f.onsubmit=async e=>{e.preventDefault();b.disabled=true;s.style.display='block';m.className='';m.textContent='Starting...';
+try{let r=await fetch('/download',{method:'POST',body:new FormData(f)}),d=await r.json();if(!r.ok)throw Error(d.error);
+let t=setInterval(async()=>{let q=await fetch('/status/'+d.job_id),x=await q.json();m.textContent=x.message||'Processing...';
+if(x.status==='ready'){clearInterval(t);m.className='success';m.textContent='✓ Ready — downloading '+x.filename;location='/get/'+d.job_id;b.disabled=false}
+if(x.status==='error'){clearInterval(t);m.className='error';m.textContent='✕ '+x.message;b.disabled=false}},1200)}
+catch(x){m.className='error';m.textContent='✕ '+x.message;b.disabled=false}};
+</script></body></html>
